@@ -3,6 +3,10 @@ from sql_queries import create_table_queries, drop_table_queries
 
 
 def create_database():
+    """
+    Creates a PostGre SQL database and provides its connector and cursor.
+    """
+    
     # connect to default database
     conn = psycopg2.connect("host=127.0.0.1 dbname=studentdb user=student password=student")
     conn.set_session(autocommit=True)
@@ -23,12 +27,20 @@ def create_database():
 
 
 def drop_tables(cur, conn):
+    """
+    Provided a PostgreSQL cursor and connector drops the tables declared in drop_tables_queries
+    list.
+    """
     for query in drop_table_queries:
         cur.execute(query)
         conn.commit()
 
 
 def create_tables(cur, conn):
+    """
+    Provided a PostgreSQL cursor and connector creates the tables declared in drop_tables_queries
+    list.
+    """
     for query in create_table_queries:
         cur.execute(query)
         conn.commit()
