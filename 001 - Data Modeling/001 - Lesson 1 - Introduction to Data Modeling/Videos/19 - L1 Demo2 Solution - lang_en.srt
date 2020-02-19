@@ -1,0 +1,364 @@
+1
+00:00:00,000 --> 00:00:03,390
+Let's talk about the solution for lesson one exercise two,
+
+2
+00:00:03,390 --> 00:00:05,310
+creating a table with Apache Cassandra.
+
+3
+00:00:05,309 --> 00:00:07,919
+In this exercise, we walked through the basics of creating
+
+4
+00:00:07,919 --> 00:00:10,919
+a table in Apache Cassandra and inserting rows of data.
+
+5
+00:00:10,919 --> 00:00:13,529
+We then did a simple CQL query to
+
+6
+00:00:13,529 --> 00:00:18,419
+validate actually to say CQL query to validate the information.
+
+7
+00:00:18,420 --> 00:00:21,390
+So, anywhere that you saw the pound sign,
+
+8
+00:00:21,390 --> 00:00:23,010
+you'll need to fill in that code.
+
+9
+00:00:23,010 --> 00:00:28,005
+So of course we're going to "import" our Python driver, "import" Cassandra.
+
+10
+00:00:28,004 --> 00:00:31,529
+Then we're going to create that connection to the database,
+
+11
+00:00:33,340 --> 00:00:35,910
+and then we're going to test out our connection,
+
+12
+00:00:35,909 --> 00:00:38,894
+just to make sure that even though we didn't get an error thrown back,
+
+13
+00:00:38,895 --> 00:00:42,690
+let's just double-check that we're able to connect to the database.
+
+14
+00:00:42,689 --> 00:00:45,814
+Great. No keyspace. We got an error,
+
+15
+00:00:45,814 --> 00:00:47,409
+which is what we were expecting.
+
+16
+00:00:47,409 --> 00:00:49,375
+No keyspace has been defined.
+
+17
+00:00:49,375 --> 00:00:52,884
+Use the keyspace or explicitly say a keyspace.table name.
+
+18
+00:00:52,884 --> 00:01:00,390
+Okay, makes sense. So let's create our keyspace so that we can do our work from it.
+
+19
+00:01:00,390 --> 00:01:03,880
+Ignore the replication strategy and factor information for now.
+
+20
+00:01:03,880 --> 00:01:05,094
+These will be discussed later.
+
+21
+00:01:05,094 --> 00:01:07,314
+Just know that well one node local instance,
+
+22
+00:01:07,314 --> 00:01:10,659
+this will be your strategy and replication factor.
+
+23
+00:01:10,659 --> 00:01:14,034
+So we're going to create a keyspace if it does not exist.
+
+24
+00:01:14,034 --> 00:01:17,164
+And then we're going to connect to our keyspace.
+
+25
+00:01:17,165 --> 00:01:20,120
+All right, let's get to data modeling.
+
+26
+00:01:20,120 --> 00:01:24,685
+Let's imagine we'd like to start creating a song library of all the songs we own.
+
+27
+00:01:24,685 --> 00:01:33,359
+Each song has a lot of information we could add to the song library table,
+
+28
+00:01:33,359 --> 00:01:37,140
+but we'll just start with the name of the song, artist's name, year,
+
+29
+00:01:37,140 --> 00:01:38,415
+album it was from,
+
+30
+00:01:38,415 --> 00:01:39,510
+and if it was a single,
+
+31
+00:01:39,510 --> 00:01:41,835
+if it wasn't part of an album.
+
+32
+00:01:41,834 --> 00:01:43,724
+So, song title, artist,
+
+33
+00:01:43,724 --> 00:01:45,584
+year, album and then single.
+
+34
+00:01:45,584 --> 00:01:51,229
+But stop. We're working with Apache Cassandra, a NoSQL database.
+
+35
+00:01:51,230 --> 00:01:55,445
+We can't model our data and create our table without more information.
+
+36
+00:01:55,444 --> 00:01:58,789
+What queries will I be performing on this data?
+
+37
+00:01:58,790 --> 00:02:02,000
+If you remember to ask this question whenever you're
+
+38
+00:02:02,000 --> 00:02:05,614
+doing data modeling in Apache Cassandra, you're in a good spot.
+
+39
+00:02:05,614 --> 00:02:08,990
+In this case, I'd like to be able to get every song by
+
+40
+00:02:08,990 --> 00:02:12,105
+certain artists that was released in a particular year.
+
+41
+00:02:12,104 --> 00:02:15,530
+Select 'start' from songs where year equals 1970,
+
+42
+00:02:15,530 --> 00:02:17,625
+and artist name equals The Beatles.
+
+43
+00:02:17,625 --> 00:02:21,979
+Because of this, I need to be able to do aware on year.
+
+44
+00:02:21,979 --> 00:02:24,004
+Year will become our partition key,
+
+45
+00:02:24,004 --> 00:02:28,409
+and artist name we might clustering column to make each primary key unique.
+
+46
+00:02:28,409 --> 00:02:31,250
+Remember, there are no duplicates in Apache Cassandra.
+
+47
+00:02:31,250 --> 00:02:33,604
+Now translate this to a create table statement.
+
+48
+00:02:33,604 --> 00:02:36,334
+Don't worry if any of this seems confusing.
+
+49
+00:02:36,335 --> 00:02:40,400
+All of lesson three we'll focus heavily on these topics.
+
+50
+00:02:40,400 --> 00:02:43,120
+Create table if it does not exist called songs.
+
+51
+00:02:43,120 --> 00:02:44,974
+We're going to have a year of an Int.
+
+52
+00:02:44,974 --> 00:02:46,549
+Song title is text,
+
+53
+00:02:46,550 --> 00:02:48,035
+artist's name is text,
+
+54
+00:02:48,034 --> 00:02:50,615
+album name text and then we're going to have
+
+55
+00:02:50,615 --> 00:02:53,800
+whether it was a single or not and we're going to represent that with a Boolean.
+
+56
+00:02:53,800 --> 00:02:58,545
+From there we're going to do our primary key as year and artist's name.
+
+57
+00:02:58,544 --> 00:03:01,214
+Let's create that table.
+
+58
+00:03:01,215 --> 00:03:03,870
+Great. No error was found.
+
+59
+00:03:03,870 --> 00:03:06,259
+But let's check to ensure our table was created.
+
+60
+00:03:06,259 --> 00:03:08,264
+Let's do a quick select count star,
+
+61
+00:03:08,264 --> 00:03:11,719
+which should return zero as we have not answered any rows.
+
+62
+00:03:11,719 --> 00:03:15,514
+Depending on your version of Apache Cassandra you haven't solved,
+
+63
+00:03:15,514 --> 00:03:20,359
+this might throw and allow filtering error instead of the result of zero.
+
+64
+00:03:20,360 --> 00:03:24,590
+This is to be expected as this type of query should not be performed on large data sets.
+
+65
+00:03:24,590 --> 00:03:26,750
+We're only doing this for the sake of the demo.
+
+66
+00:03:26,750 --> 00:03:29,389
+Again, much more on this in lesson three.
+
+67
+00:03:29,389 --> 00:03:31,629
+Select count star from songs.
+
+68
+00:03:31,629 --> 00:03:35,090
+So in my case actually I've already created this table and
+
+69
+00:03:35,090 --> 00:03:39,150
+inserted rows and that's why you're not seeing zero and you're seeing two.
+
+70
+00:03:39,250 --> 00:03:43,069
+Let's insert two rows across the universe.
+
+71
+00:03:43,069 --> 00:03:46,319
+The Beatles 1970 falls and let it be.
+
+72
+00:03:46,319 --> 00:03:49,449
+And the second row, The Beatles Think for yourself falls
+
+73
+00:03:49,449 --> 00:03:53,329
+1965 and Rubber Soul. So we're going to insert those.
+
+74
+00:03:53,330 --> 00:03:55,145
+Again, note the query here.
+
+75
+00:03:55,145 --> 00:03:59,135
+Note the insert statement with the values and then we're inserting the values.
+
+76
+00:03:59,134 --> 00:04:03,259
+Wonderful. Validate your data was inserted into the table.
+
+77
+00:04:03,259 --> 00:04:06,544
+The for loop is used for printing the results.
+
+78
+00:04:06,544 --> 00:04:10,689
+If executing this query in CQLSH,
+
+79
+00:04:10,689 --> 00:04:16,584
+which is a shell program that you can use to run a CQL queries,this will not be required.
+
+80
+00:04:16,584 --> 00:04:19,474
+Depending on the version of Apache Cassandra you have installed,
+
+81
+00:04:19,475 --> 00:04:21,410
+this again might throw and allow
+
+82
+00:04:21,410 --> 00:04:25,085
+filtering error instead of putting the two rows we just inserted.
+
+83
+00:04:25,084 --> 00:04:29,279
+This is to be expected as this type of query should not be performed on large data sets.
+
+84
+00:04:29,279 --> 00:04:31,414
+We're only doing this for the sake of the demo.
+
+85
+00:04:31,415 --> 00:04:34,335
+Again much more on this in lesson three.
+
+86
+00:04:34,334 --> 00:04:36,754
+Awesome, we got back our two rows.
+
+87
+00:04:36,754 --> 00:04:40,009
+Let's validate our data model with our original query.
+
+88
+00:04:40,009 --> 00:04:45,474
+Select star from songs where year equals 1970 and artist name equals The Beatles.
+
+89
+00:04:45,475 --> 00:04:47,955
+Wonderful, we got back our row.
+
+90
+00:04:47,954 --> 00:04:52,490
+Great. Success. Finally, let's close out our session and our cluster connection.
+
+91
+00:04:52,490 --> 00:04:54,780
+And we're done with the exercise.
+
