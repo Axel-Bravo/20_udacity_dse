@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Project 3 - Data Warehouse
+.idea/
+dwh_user.cfg
