@@ -100,7 +100,7 @@ artist_table_create = ("""
 
 time_table_create = ("""
                             CREATE TABLE IF NOT EXISTS time (
-                                start_time  TIMESTAMP SORTKEY ,
+                                start_time  TIMESTAMP SORTKEY,
                                 hour        INTEGER NOT NULL,
                                 day         INTEGER NOT NULL,
                                 week        INTEGER NOT NULL,
@@ -113,10 +113,20 @@ time_table_create = ("""
 
 # STAGING TABLES
 staging_events_copy = ("""
-""").format()
+                            copy staging_events
+                            from {}
+                            CREDENTIALS 'aws_iam_role={}'
+                            gzip delimiter ';' compupdate off region 'us-west-2';
+                      """).format(config['S3']['LOG_DATA'],
+                                  *config['IAM_ROLE'].values())
 
 staging_songs_copy = ("""
-""").format()
+                            copy staging_songs 
+                            from {}
+                            CREDENTIALS 'aws_iam_role={}'
+                            gzip delimiter ';' compupdate off region 'us-west-2';
+                      """).format(config['S3']['SONG_DATA'],
+                                  *config['IAM_ROLE'].values())
 
 
 # FINAL TABLES
