@@ -23,7 +23,7 @@ staging_events_table_create = ("""
                                     artist             VARCHAR(50),
                                     auth               VARCHAR(25) NOT NULL,
                                     first_name         VARCHAR(30) NOT NULL,
-                                    gender             VARCGAR(1) NOT NULL,
+                                    gender             VARCHAR(1) NOT NULL,
                                     intem_in_session   INTEGER  NOT NULL,
                                     last_name          VARCHAR(30) NOT NULL,
                                     lenght             FLOAT NOT NULL,
