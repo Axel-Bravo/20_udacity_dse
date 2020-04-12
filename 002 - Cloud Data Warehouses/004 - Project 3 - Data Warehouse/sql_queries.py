@@ -17,40 +17,40 @@ time_table_drop = "DROP TABLE IF EXISTS time;"
 
 # CREATE TABLES
 staging_events_table_create = ("""
-                                CREATE TABLE IF NOT EXISTS staging_events (
-                                    id                 BIGINT IDENTITY(0,1) SORTKEY,
-                                    artist             VARCHAR(50),
-                                    auth               VARCHAR(25) NOT NULL,
-                                    first_name         VARCHAR(30) NOT NULL,
-                                    gender             VARCHAR(1) NOT NULL,
-                                    intem_in_session   INTEGER  NOT NULL,
-                                    last_name          VARCHAR(30) NOT NULL,
-                                    lenght             FLOAT NOT NULL,
-                                    level              VARCHAR(15) NOT NULL,
-                                    location           VARCHAR(100) NOT NULL,
-                                    method             VARCHAR(15) NOT NULL,
-                                    page               VARCHAR(15) NOT NULL,
-                                    registration       TIMESTAMP NOT NULL,
-                                    session_id         INTEGER NOT NULL,
-                                    status             INTEGER NOT NULL,
-                                    ts                 TIMESTAMP NOT NULL,
-                                    user_agent         VARCHAR(75) NOT NULL,
-                                    user_id            INT NOT NULL
-                                    );
+                                 CREATE TABLE IF NOT EXISTS staging_events (
+                                     artist             VARCHAR(150),
+                                     auth               VARCHAR(50),
+                                     first_name         VARCHAR(50),
+                                     gender             VARCHAR(1),
+                                     item_in_session    INTEGER,
+                                     last_name          VARCHAR(50),
+                                     length             FLOAT,
+                                     level              VARCHAR(50),
+                                     location           VARCHAR(100),
+                                     method             VARCHAR(50),
+                                     page               VARCHAR(50),
+                                     registration       FLOAT,
+                                     session_id         INTEGER,
+                                     song               VARCHAR(200),
+                                     status             INTEGER,
+                                     ts                 TIMESTAMP,
+                                     user_agent         VARCHAR(150) ,
+                                     user_id            INTEGER
+                                     );
                               """)
 
 staging_songs_table_create = ("""
                                 CREATE TABLE IF NOT EXISTS staging_songs (
-                                    num_songs        INTEGER NOT NULL,
-                                    artist_id        VARCHAR(25) NOT NULL,
+                                    num_songs        INTEGER,
+                                    artist_id        VARCHAR(50),
                                     artist_latitude  FLOAT,
                                     artist_longitud  FLOAT,
-                                    artist_location  VARCHAR(50) NOT NULL,
-                                    artist_name      VARCHAR(50) NOT NULL,
-                                    song_id          VARCHAR(25) NOT NULL SORTKEY,
-                                    title            VARCHAR(50) NOT NULL,
-                                    duration         FLOAT NOT NULL,
-                                    year             INTEGER NOT NULL
+                                    artist_location  VARCHAR(100),
+                                    artist_name      VARCHAR(100),
+                                    song_id          VARCHAR(50) SORTKEY,
+                                    title            VARCHAR(150),
+                                    duration         FLOAT,
+                                    year             INTEGER
                                     );
                              """)
 
@@ -113,20 +113,24 @@ time_table_create = ("""
 
 # STAGING TABLES
 staging_events_copy = ("""
-                            copy staging_events
-                            from {}
-                            CREDENTIALS 'aws_iam_role={}'
-                            gzip delimiter ';' compupdate off region 'us-west-2';
+                            COPY staging_events
+                            FROM '{}'
+                            IAM_ROLE '{}'
+                            REGION 'us-west-2'
+                            FORMAT AS JSON '{}' 
+                            TIMEFORMAT 'epochmillisecs';
                       """).format(config['S3']['LOG_DATA'],
-                                  *config['IAM_ROLE'].values())
+                                  config['IAM_ROLE']['ARN'],
+                                  config['S3']['LOG_JSONPATH'])
 
 staging_songs_copy = ("""
-                            copy staging_songs 
-                            from {}
-                            CREDENTIALS 'aws_iam_role={}'
-                            gzip delimiter ';' compupdate off region 'us-west-2';
+                           COPY staging_songs 
+                           FROM '{}'
+                           IAM_ROLE '{}'
+                           REGION 'us-west-2'
+                           FORMAT AS JSON 'auto';
                       """).format(config['S3']['SONG_DATA'],
-                                  *config['IAM_ROLE'].values())
+                                  config['IAM_ROLE']['ARN'],)
 
 
 # FINAL TABLES
