@@ -11,7 +11,8 @@ def load_staging_tables(*, connector: psycopg2.connect, cursor, copy_queries: [s
     Args:
         connector: database connector
         cursor: database cursor
-        copy_queries: copy information form the S3 bucket into DB table SQL queries list
+        copy_queries: copy information form the S3 bucket (landing) into DB table (staging)
+                      SQL queries' list
 
     Returns: None
     """
@@ -28,7 +29,7 @@ def insert_tables(*, connector: psycopg2.connect, cursor, insert_queries: [str, 
     Args:
         connector: database connector
         cursor: database cursor
-        insert_queries: insert information form the landing into staging DB tables's queries list
+        insert_queries: insert information form the staging into golden DB tables queries' list
 
     Returns: None
     """
