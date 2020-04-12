@@ -18,7 +18,7 @@ time_table_drop = "DROP TABLE IF EXISTS time;"
 # CREATE TABLES
 staging_events_table_create = ("""
                                 CREATE TABLE IF NOT EXISTS staging_events (
-                                    id                 IDENTITY(0,1) SORTKEY,
+                                    id                 BIGINT IDENTITY(0,1) SORTKEY,
                                     artist             VARCHAR(50),
                                     auth               VARCHAR(25) NOT NULL,
                                     first_name         VARCHAR(30) NOT NULL,
@@ -39,7 +39,7 @@ staging_events_table_create = ("""
                                     );
                               """)
 
-staging_songs_table_create= ("""
+staging_songs_table_create = ("""
                                 CREATE TABLE IF NOT EXISTS staging_songs (
                                     num_songs        INTEGER NOT NULL,
                                     artist_id        VARCHAR(25) NOT NULL,
@@ -58,10 +58,10 @@ songplay_table_create = ("""
                             CREATE TABLE IF NOT EXISTS songplays (
                                 songplay_id     VARCHAR SORTKEY,
                                 start_time      BIGINT NOT NULL DISTKEY,
-                                user_id         INTEGER NOT NULL DISTKEY,
+                                user_id         INTEGER NOT NULL,
                                 level           VARCHAR(15) NOT NULL,
-                                song_id         VARCHAR(25) NOT NULL DISTKEY,
-                                artist_id       VARCHAR(25) NOT NULL DISTKEY,
+                                song_id         VARCHAR(25) NOT NULL,
+                                artist_id       VARCHAR(25) NOT NULL,
                                 session_id      INTEGER NOT NULL,
                                 location        VARCHAR(100) NOT NULL,
                                 user_agent      VARCHAR(75) NOT NULL
@@ -106,7 +106,7 @@ time_table_create = ("""
                                 week        INTEGER NOT NULL,
                                 month       INTEGER NOT NULL,
                                 year        INTEGER NOT NULL,
-                                weekday     INTEGER NOT NULL,
+                                weekday     INTEGER NOT NULL
                             );
                      """)
 
