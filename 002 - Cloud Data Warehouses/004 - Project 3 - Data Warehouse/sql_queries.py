@@ -46,7 +46,7 @@ staging_songs_table_create = ("""
                                     artist_latitude  FLOAT,
                                     artist_longitud  FLOAT,
                                     artist_location  VARCHAR(100),
-                                    artist_name      VARCHAR(100),
+                                    artist_name      VARCHAR(150),
                                     song_id          VARCHAR(50) SORTKEY,
                                     title            VARCHAR(150),
                                     duration         FLOAT,
@@ -57,42 +57,42 @@ staging_songs_table_create = ("""
 songplay_table_create = ("""
                             CREATE TABLE IF NOT EXISTS songplays (
                                 songplay_id     VARCHAR SORTKEY,
-                                start_time      BIGINT NOT NULL DISTKEY,
-                                user_id         INTEGER NOT NULL,
-                                level           VARCHAR(15) NOT NULL,
-                                song_id         VARCHAR(25) NOT NULL,
-                                artist_id       VARCHAR(25) NOT NULL,
-                                session_id      INTEGER NOT NULL,
-                                location        VARCHAR(100) NOT NULL,
-                                user_agent      VARCHAR(75) NOT NULL
+                                start_time      BIGINT DISTKEY,
+                                user_id         INTEGER,
+                                level           VARCHAR(50),
+                                song_id         VARCHAR(25),
+                                artist_id       VARCHAR(25),
+                                session_id      INTEGER,
+                                location        VARCHAR(100),
+                                user_agent      VARCHAR(150) 
                              );
                         """)
 
 user_table_create = ("""
                             CREATE TABLE IF NOT EXISTS users (
                                 user_id     INTEGER SORTKEY,
-                                first_name  VARCHAR(30) NOT NULL,
-                                last_name   VARCHAR(30) NOT NULL,
-                                gender      VARCHAR(1) NOT NULL,
-                                level       VARCHAR(15) NOT NULL
+                                first_name  VARCHAR(50),
+                                last_name   VARCHAR(50),
+                                gender      VARCHAR(1),
+                                level       VARCHAR(50) 
                             );
                     """)
 
 song_table_create = ("""
                             CREATE TABLE IF NOT EXISTS songs (
                                 song_id    VARCHAR(25) SORTKEY,
-                                title      VARCHAR(50) NOT NULL,
-                                artist_id  VARCHAR(25) NOT NULL,
-                                year       INTEGER NOT NULL,
-                                duration   FLOAT NOT NULL
+                                title      VARCHAR(200),
+                                artist_id  VARCHAR(25),
+                                year       INTEGER,
+                                duration   FLOAT 
                             );
                     """)
 
 artist_table_create = ("""
                             CREATE TABLE IF NOT EXISTS artists (
                                 artist_id     VARCHAR(25) SORTKEY, 
-                                name          VARCHAR(50) NOT NULL,
-                                location      VARCHAR(100) NOT NULL,
+                                name          VARCHAR(150),
+                                location      VARCHAR(100),
                                 latitude      FLOAT,
                                 longitude     FLOAT
                             );
@@ -101,12 +101,12 @@ artist_table_create = ("""
 time_table_create = ("""
                             CREATE TABLE IF NOT EXISTS time (
                                 start_time  TIMESTAMP SORTKEY,
-                                hour        INTEGER NOT NULL,
-                                day         INTEGER NOT NULL,
-                                week        INTEGER NOT NULL,
-                                month       INTEGER NOT NULL,
-                                year        INTEGER NOT NULL,
-                                weekday     INTEGER NOT NULL
+                                hour        INTEGER,
+                                day         INTEGER,
+                                week        INTEGER,
+                                month       INTEGER,
+                                year        INTEGER,
+                                weekday     INTEGER 
                             );
                      """)
 
