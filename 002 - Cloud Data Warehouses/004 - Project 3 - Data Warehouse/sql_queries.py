@@ -46,7 +46,7 @@ staging_songs_table_create = ("""
                                     artist_latitude  FLOAT,
                                     artist_longitud  FLOAT,
                                     artist_location  VARCHAR(250),
-                                    artist_name      VARCHAR(150),
+                                    artist_name      VARCHAR(250),
                                     song_id          VARCHAR(50) SORTKEY,
                                     title            VARCHAR(250),
                                     duration         FLOAT,
@@ -91,7 +91,7 @@ song_table_create = ("""
 artist_table_create = ("""
                             CREATE TABLE IF NOT EXISTS artists (
                                 artist_id     VARCHAR(25) SORTKEY, 
-                                name          VARCHAR(150),
+                                name          VARCHAR(250),
                                 location      VARCHAR(250),
                                 latitude      FLOAT,
                                 longitude     FLOAT
