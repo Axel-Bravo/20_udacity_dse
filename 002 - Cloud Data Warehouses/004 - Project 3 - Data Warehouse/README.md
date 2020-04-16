@@ -97,4 +97,3 @@ The project consists on:
  1. Launch a AWS Redshift DB and properly populate the parameters on the configuration file `dwh.cfg`.
  2. Execute *create_tables.py* on the terminal to create the Redshift database and tables: `python create_tables.py`
  3. Execute *etl.py* to batch upload the data into the correspondent tables: `python etl.py`
-
