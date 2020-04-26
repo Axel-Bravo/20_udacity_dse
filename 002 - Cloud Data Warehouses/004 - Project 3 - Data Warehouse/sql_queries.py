@@ -44,7 +44,7 @@ staging_songs_table_create = ("""
                                     num_songs        INTEGER,
                                     artist_id        VARCHAR(50),
                                     artist_latitude  FLOAT,
-                                    artist_longitud  FLOAT,
+                                    artist_longitude  FLOAT,
                                     artist_location  VARCHAR(250),
                                     artist_name      VARCHAR(250),
                                     song_id          VARCHAR(50) SORTKEY DISTKEY,
@@ -171,7 +171,7 @@ user_table_insert = ("""
 
 song_table_insert = ("""
                         INSERT INTO songs (song_id, title, artist_id, year, duration)
-                        SELECT DISTINCT song id,
+                        SELECT DISTINCT song_id,
                                         title,
                                         artist_id,
                                         year,
