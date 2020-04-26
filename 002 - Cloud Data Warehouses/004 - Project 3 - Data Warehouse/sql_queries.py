@@ -57,10 +57,10 @@ staging_songs_table_create = ("""
 songplay_table_create = ("""
                             CREATE TABLE IF NOT EXISTS songplays (
                                 songplay_id     VARCHAR PRIMARY KEY SORTKEY NOT NULL ,
-                                start_time      BIGINT DISTKEY NOT NULL ,
+                                start_time      TIMESTAMP DISTKEY NOT NULL ,
                                 user_id         INTEGER NOT NULL ,
                                 level           VARCHAR(50),
-                                song_id         VARCHAR(25) NOT NULL ,
+                                song_id         VARCHAR(50) NOT NULL ,
                                 artist_id       VARCHAR(25) NOT NULL ,
                                 session_id      INTEGER,
                                 location        VARCHAR(100),
@@ -80,9 +80,9 @@ user_table_create = ("""
 
 song_table_create = ("""
                             CREATE TABLE IF NOT EXISTS songs (
-                                song_id    VARCHAR(25) PRIMARY KEY SORTKEY,
+                                song_id    VARCHAR(50) PRIMARY KEY SORTKEY,
                                 title      VARCHAR(250),
-                                artist_id  VARCHAR(25),
+                                artist_id  VARCHAR(50),
                                 year       INTEGER DISTKEY,
                                 duration   FLOAT 
                             );
@@ -90,7 +90,7 @@ song_table_create = ("""
 
 artist_table_create = ("""
                             CREATE TABLE IF NOT EXISTS artists (
-                                artist_id     VARCHAR(25) PRIMARY KEY SORTKEY DISTKEY, 
+                                artist_id     VARCHAR(50) PRIMARY KEY SORTKEY DISTKEY, 
                                 name          VARCHAR(250),
                                 location      VARCHAR(250),
                                 latitude      FLOAT,
@@ -197,7 +197,7 @@ time_table_insert = ("""
                         SELECT DISTINCT start_time,
                                         EXTRACT HOUR FROM start_time,
                                         EXTRACT DAY FROM start_time,
-                                        EXTRACT WEEk FROM start_time,
+                                        EXTRACT WEEK FROM start_time,
                                         EXTRACT MONTH FROM start_time,
                                         EXTRACT YEAR FROM start_time,
                                         EXTRACT DOW FROM start_time
