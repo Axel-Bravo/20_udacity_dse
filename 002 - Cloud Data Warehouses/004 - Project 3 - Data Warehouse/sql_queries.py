@@ -195,12 +195,12 @@ artist_table_insert = ("""
 time_table_insert = ("""
                         INSERT INTO time (start_time, hour, day, week, month, year, weekday)
                         SELECT DISTINCT start_time,
-                                        EXTRACT HOUR FROM start_time,
-                                        EXTRACT DAY FROM start_time,
-                                        EXTRACT WEEK FROM start_time,
-                                        EXTRACT MONTH FROM start_time,
-                                        EXTRACT YEAR FROM start_time,
-                                        EXTRACT DOW FROM start_time
+                                        EXTRACT (HOUR FROM start_time),
+                                        EXTRACT (DAY FROM start_time),
+                                        EXTRACT (WEEK FROM start_time),
+                                        EXTRACT (MONTH FROM start_time),
+                                        EXTRACT (YEAR FROM start_time),
+                                        EXTRACT (DOW FROM start_time)
                         FROM songplays
                         WHERE songplays IS NOT NULL;
 """)
