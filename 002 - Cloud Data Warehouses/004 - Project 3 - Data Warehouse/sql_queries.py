@@ -202,7 +202,7 @@ time_table_insert = ("""
                                         EXTRACT (YEAR FROM start_time),
                                         EXTRACT (DOW FROM start_time)
                         FROM songplays
-                        WHERE songplays IS NOT NULL;
+                        WHERE start_time IS NOT NULL;
 """)
 
 
