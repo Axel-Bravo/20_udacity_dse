@@ -87,7 +87,7 @@ def process_song_data(*, song_data: pysql.DataFrame, output_folder: str) -> None
     Returns: None
     """
     df_songs = song_data.select('song_id', 'title', 'artist_id', 'year', 'duration')
-    df_songs.write.parquet(path=os.path.join(output_folder, 'work', 'data', 'songs.parquet'),
+    df_songs.write.parquet(path=os.path.join(output_folder, 'songs.parquet'),
                            partitionBy=['year', 'artist_id'])
 
     df_artists = song_data \
@@ -96,7 +96,7 @@ def process_song_data(*, song_data: pysql.DataFrame, output_folder: str) -> None
         .withColumnRenamed('artist_location', 'location') \
         .withColumnRenamed('artist_latitude', 'latitude') \
         .withColumnRenamed('artist_longitude', 'longitude')
-    df_artists.write.parquet(path=os.path.join(output_folder, 'work', 'data', 'artists.parquet'))
+    df_artists.write.parquet(path=os.path.join(output_folder, 'artists.parquet'))
 
 
 def process_log_data(*, song_data: pysql.DataFrame, log_data: pysql.DataFrame,
@@ -117,7 +117,7 @@ def process_log_data(*, song_data: pysql.DataFrame, log_data: pysql.DataFrame,
     Returns: None
     """
     df_users = log_data.select('user_id', 'first_name', 'last_name', 'gender', 'level')
-    df_users.write.parquet(path=os.path.join(os.getcwd(), 'work', 'data', 'users.parquet'))
+    df_users.write.parquet(path=os.path.join(output_folder, 'users.parquet'))
 
     df_time = log_data.select('ts').withColumnRenamed('ts', 'start_time')
     df_time = df_time.withColumn('hour', F.hour(df_time.start_time)) \
@@ -126,7 +126,7 @@ def process_log_data(*, song_data: pysql.DataFrame, log_data: pysql.DataFrame,
         .withColumn('month', F.month(df_time.start_time)) \
         .withColumn('year', F.year(df_time.start_time)) \
         .withColumn('weekday', F.dayofweek(df_time.start_time))
-    df_time.write.parquet(path=os.path.join(os.getcwd(), 'work', 'data', 'time.parquet'),
+    df_time.write.parquet(path=os.path.join(output_folder, 'time.parquet'),
                           partitionBy=['year', 'month'])
 
     # read in song data to use for songplays table # TODO: DOING
