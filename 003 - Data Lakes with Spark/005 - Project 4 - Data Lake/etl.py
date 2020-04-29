@@ -129,14 +129,15 @@ def process_log_data(*, song_data: pysql.DataFrame, log_data: pysql.DataFrame,
     df_time.write.parquet(path=os.path.join(output_folder, 'time.parquet'),
                           partitionBy=['year', 'month'])
 
-    # read in song data to use for songplays table # TODO: DOING
-    song_df = 
-
-    # extract columns from joined song and log datasets to create songplays table 
-    songplays_table = 
-
-    # write songplays table to parquet files partitioned by year and month
-    songplays_table
+    df_songplays = log_data.select(
+        ['artist', 'song', 'ts', 'user_id', 'level', 'session_id', 'location', 'user_agent']) \
+        .withColumnRenamed('ts', 'start_time') \
+        .join(song_data.select(['artist_name', 'title', 'song_id', 'artist_id']),
+              [log_data.artist == song_data.artist_name, log_data.song == song_data.title],
+              'inner') \
+        .drop('artist', 'song', 'artist_name', 'title') \
+        .withColumn('songplay_id', F.monotonically_increasing_id())
+    df_songplays.write.parquet(path=os.path.join(output_folder, 'songplays.parquet'))
 
 
 def main():
