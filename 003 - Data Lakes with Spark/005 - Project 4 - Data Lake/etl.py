@@ -1,6 +1,7 @@
 import os
 import configparser
 import pyspark.sql as pysql
+import pyspark.sql.functions as F
 
 config = configparser.ConfigParser()
 config.read('dl.cfg')
@@ -76,8 +77,8 @@ def process_song_data(*, song_data: pysql.DataFrame, output_folder: str) -> None
     """
     This function processes the song data and saves the resulting derived tables in
     parquet format:
-        - songs: song_id, title, artist_id, year, duration
-        - artists: artist_id, name, location, lattitude, longitude
+        - songs: songs in music database >> song_id, title, artist_id, year, duration
+        - artists: artists in music database >> artist_id, name, location, lattitude, longitude
 
     Args:
         song_data: metadata about a song and the artist of that song
@@ -98,35 +99,35 @@ def process_song_data(*, song_data: pysql.DataFrame, output_folder: str) -> None
     df_artists.write.parquet(path=os.path.join(output_folder, 'work', 'data', 'artists.parquet'))
 
 
-def process_log_data(spark, input_data, output_data):
-    # get filepath to log data file
-    log_data =
+def process_log_data(*, song_data: pysql.DataFrame, log_data: pysql.DataFrame,
+                     output_folder: str) -> None:
+    """
+    This function processes the log data and saves the resulting derived tables in
+    parquet format:
+        - users: users in the app >> user_id, first_name, last_name, gender, level
+        - time: timestamps of records >> start_time, hour, day, week, month, year, weekday
+        - songplays: records in log data associated with song plays >> songplay_id, start_time,
+                     user_id, level, song_id, artist_id, session_id, location, user_agent
 
-    # read log data file
-    df = 
-    
-    # filter by actions for song plays
-    df = 
+    Args:
+        song_data: metadata about a song and the artist of that song
+        log_data: simulate app activity logs from an imaginary music streaming app
+        output_folder: where to save the different output tables in parquet format
 
-    # extract columns for users table    
-    artists_table = 
-    
-    # write users table to parquet files
-    artists_table
+    Returns: None
+    """
+    df_users = log_data.select('user_id', 'first_name', 'last_name', 'gender', 'level')
+    df_users.write.parquet(path=os.path.join(os.getcwd(), 'work', 'data', 'users.parquet'))
 
-    # create timestamp column from original timestamp column
-    get_timestamp = udf()
-    df = 
-    
-    # create datetime column from original timestamp column
-    get_datetime = udf()
-    df = 
-    
-    # extract columns to create time table
-    time_table = 
-    
-    # write time table to parquet files partitioned by year and month
-    time_table
+    df_time = log_data.select('ts').withColumnRenamed('ts', 'start_time')
+    df_time = df_time.withColumn('hour', F.hour(df_time.start_time)) \
+        .withColumn('day', F.dayofmonth(df_time.start_time)) \
+        .withColumn('week', F.weekofyear(df_time.start_time)) \
+        .withColumn('month', F.month(df_time.start_time)) \
+        .withColumn('year', F.year(df_time.start_time)) \
+        .withColumn('weekday', F.dayofweek(df_time.start_time))
+    df_time.write.parquet(path=os.path.join(os.getcwd(), 'work', 'data', 'time.parquet'),
+                          partitionBy=['year', 'month'])
 
     # read in song data to use for songplays table # TODO: DOING
     song_df = 
@@ -147,7 +148,8 @@ def main():
 
     process_song_data(song_data=data['song_data'], output_folder=output_folder)
 
-    process_log_data(spark, input_data, output_data)
+    process_log_data(song_data=data['song_data'], log_data=data['log_data'],
+                     output_folder=output_folder)
 
 
 if __name__ == "__main__":
