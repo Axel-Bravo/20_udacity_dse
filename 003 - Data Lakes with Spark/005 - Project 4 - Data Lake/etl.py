@@ -1,75 +1,100 @@
-import configparser
-from datetime import datetime
 import os
-from pyspark.sql import SparkSession
-from pyspark.sql import types
-from pyspark.sql.functions import udf, col
-from pyspark.sql.functions import year, month, dayofmonth, hour, weekofyear, date_format
+import configparser
+import pyspark.sql as pysql
 
 config = configparser.ConfigParser()
 config.read('dl.cfg')
 
-os.environ['AWS_ACCESS_KEY_ID']= config['AWS_ACCESS_KEY_ID']
+os.environ['AWS_ACCESS_KEY_ID'] = config['AWS_ACCESS_KEY_ID']
 os.environ['AWS_SECRET_ACCESS_KEY'] = config['AWS_SECRET_ACCESS_KEY']
 
 
-def create_spark_session():
-    spark = SparkSession \
-        .builder \
-        .config("spark.jars.packages", "org.apache.hadoop:hadoop-aws:2.7.0") \
-        .getOrCreate()
-    return spark
-
-
-def process_song_data(spark: SparkSession, s3_path: str, output_folder: str) -> None:
+def create_spark_session() -> pysql.SparkSession:
     """
-    This function processes the song data, in JSON format, and saves the resulting tables in
+    Creates a SparkSession
+    Returns: SparkSession
+    """
+    return pysql.SparkSession.builder.config("spark.jars.packages",
+                                              "org.apache.hadoop:hadoop-aws:2.7.0").getOrCreate()
+
+
+def load_data(*, spark: pysql.SparkSession, s3_path: str) -> {str: pysql.DataFrame, ...:...}:
+    """
+    Loads project required data into memory, enforcing a predefined data schema
+    Args:
+        spark: valid SparkSession, where to execute the code
+        s3_path: AWS S3 Bucket path, from where to extract the data
+
+    Returns:
+        song_data: metadata about a song and the artist of that song
+        log_data: simulate app activity logs from an imaginary music streaming app
+    """
+    data = {}
+    
+    song_schema = pysql.types.StructType([
+        pysql.types.StructField("num_songs", pysql.types.IntegerType()),
+        pysql.types.StructField("artist_id", pysql.types.StringType()),
+        pysql.types.StructField("artist_latitude", pysql.types.FloatType()),
+        pysql.types.StructField("artist_longitude", pysql.types.FloatType()),
+        pysql.types.StructField("artist_location", pysql.types.StringType()),
+        pysql.types.StructField("artist_name", pysql.types.StringType()),
+        pysql.types.StructField("song_id", pysql.types.StringType()),
+        pysql.types.StructField("title", pysql.types.StringType()),
+        pysql.types.StructField("duration", pysql.types.FloatType()),
+        pysql.types.StructField("year", pysql.types.IntegerType())
+    ])
+
+    log_schema = pysql.types.StructType([
+        pysql.types.StructField("artist", pysql.types.StringType()),
+        pysql.types.StructField("auth", pysql.types.StringType()),
+        pysql.types.StructField("first_name", pysql.types.StringType()),
+        pysql.types.StructField("gender", pysql.types.StringType()),
+        pysql.types.StructField("item_in_session", pysql.types.IntegerType()),
+        pysql.types.StructField("last_name", pysql.types.StringType()),
+        pysql.types.StructField("length", pysql.types.FloatType()),
+        pysql.types.StructField("level", pysql.types.StringType()),
+        pysql.types.StructField("location", pysql.types.StringType()),
+        pysql.types.StructField("method", pysql.types.StringType()),
+        pysql.types.StructField("page", pysql.types.StringType()),
+        pysql.types.StructField("registration", pysql.types.FloatType()),
+        pysql.types.StructField("session_id", pysql.types.IntegerType()),
+        pysql.types.StructField("song", pysql.types.StringType()),
+        pysql.types.StructField("status", pysql.types.IntegerType()),
+        pysql.types.StructField("ts", pysql.types.TimestampType()),
+        pysql.types.StructField("user_agent", pysql.types.StringType()),
+        pysql.types.StructField("user_id", pysql.types.IntegerType())
+    ])
+
+    data['song_data'] = spark.read.json(s3_path + 'song_data/*/*/*/*.json', schema=song_schema)
+    log_data = spark.read.json(s3_path + 'log-data/*.json', schema=log_schema)
+    data['log_data'] = log_data.filter(log_data.page == 'NextSong')
+    
+    return data
+
+
+def process_song_data(*, song_data: pysql.DataFrame, output_folder: str) -> None:
+    """
+    This function processes the song data and saves the resulting derived tables in
     parquet format:
         - songs: song_id, title, artist_id, year, duration
         - artists: artist_id, name, location, lattitude, longitude
 
     Args:
-        spark: valid SparkSession, where to execute the code
-        s3_path: AWS S3 Bucket path, from where to extract the data
+        song_data: metadata about a song and the artist of that song
         output_folder: where to save the different output tables in parquet format
 
-    Attributes
-        song_data: S3's sub-folder containing 'song data'
-        song_schema: JSON's song schema
-
-
     Returns: None
-
     """
-
-    song_data: str = 'song_data'
-
-    song_schema = types.StructType([
-        types.StructField("num_songs", types.IntegerType()),
-        types.StructField("artist_id", types.StringType()),
-        types.StructField("artist_latitude", types.FloatType()),
-        types.StructField("artist_longitude", types.FloatType()),
-        types.StructField("artist_location", types.StringType()),
-        types.StructField("artist_name", types.StringType()),
-        types.StructField("song_id", types.StringType()),
-        types.StructField("title", types.StringType()),
-        types.StructField("duration", types.FloatType()),
-        types.StructField("year", types.IntegerType())
-    ])
-
-    song_data = spark.read.json(s3_path + song_data + '/*/*/*/*.json', schema=song_schema)
-
     df_songs = song_data.select('song_id', 'title', 'artist_id', 'year', 'duration')
     df_songs.write.parquet(path=os.path.join(output_folder, 'work', 'data', 'songs.parquet'),
                            partitionBy=['year', 'artist_id'])
 
-    df_artists = song_data\
+    df_artists = song_data \
         .select('artist_id', 'artist_name', 'artist_location', 'artist_latitude','artist_longitude')\
-        .withColumnRenamed('artist_name', 'name')\
-        .withColumnRenamed('artist_location', 'location')\
-        .withColumnRenamed('artist_latitude', 'latitude')\
+        .withColumnRenamed('artist_name', 'name') \
+        .withColumnRenamed('artist_location', 'location') \
+        .withColumnRenamed('artist_latitude', 'latitude') \
         .withColumnRenamed('artist_longitude', 'longitude')
-
     df_artists.write.parquet(path=os.path.join(output_folder, 'work', 'data', 'artists.parquet'))
 
 
@@ -103,7 +128,7 @@ def process_log_data(spark, input_data, output_data):
     # write time table to parquet files partitioned by year and month
     time_table
 
-    # read in song data to use for songplays table
+    # read in song data to use for songplays table # TODO: DOING
     song_df = 
 
     # extract columns from joined song and log datasets to create songplays table 
@@ -116,9 +141,12 @@ def process_log_data(spark, input_data, output_data):
 def main():
     spark = create_spark_session()
     input_data = "s3a://udacity-dend/"
-    output_data = ""
-    
-    process_song_data(spark, input_data, output_data)    
+    output_folder = ""
+
+    data = load_data(spark=spark, s3_path=input_data)
+
+    process_song_data(song_data=data['song_data'], output_folder=output_folder)
+
     process_log_data(spark, input_data, output_data)
 
 
