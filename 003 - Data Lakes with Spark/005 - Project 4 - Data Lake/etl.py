@@ -88,8 +88,8 @@ def process_song_data(*, song_data: pysql.DataFrame, output_folder: str) -> None
     """
     df_songs = song_data.select('song_id', 'title', 'artist_id', 'year', 'duration') \
                         .dropDuplicates()
-    df_songs.write.parquet(path=os.path.join(output_folder, 'songs.parquet'),
-                           partitionBy=['year', 'artist_id'])
+    df_songs.write.parquet(path=os.path.join(output_folder, 'songs_table', 'songs_table.parquet'),
+                           mode='append', partitionBy=['year', 'artist_id'])
 
     df_artists = song_data \
         .select('artist_id', 'artist_name', 'artist_location', 'artist_latitude','artist_longitude')\
@@ -98,7 +98,9 @@ def process_song_data(*, song_data: pysql.DataFrame, output_folder: str) -> None
         .withColumnRenamed('artist_latitude', 'latitude') \
         .withColumnRenamed('artist_longitude', 'longitude') \
         .dropDuplicates()
-    df_artists.write.parquet(path=os.path.join(output_folder, 'artists.parquet'))
+    df_artists.write.parquet(path=os.path.join(output_folder, 'artists_table',
+                                               'artists_table.parquet'),
+                             mode='append')
 
 
 def process_log_data(*, song_data: pysql.DataFrame, log_data: pysql.DataFrame,
@@ -120,7 +122,8 @@ def process_log_data(*, song_data: pysql.DataFrame, log_data: pysql.DataFrame,
     """
     df_users = log_data.select('user_id', 'first_name', 'last_name', 'gender', 'level') \
                        .dropDuplicates()
-    df_users.write.parquet(path=os.path.join(output_folder, 'users.parquet'))
+    df_users.write.parquet(path=os.path.join(output_folder, 'users_table', 'users_table.parquet'),
+                           mode='append')
 
     df_time = log_data.select('ts').withColumnRenamed('ts', 'start_time')
     df_time = df_time.withColumn('hour', F.hour(df_time.start_time)) \
@@ -130,8 +133,8 @@ def process_log_data(*, song_data: pysql.DataFrame, log_data: pysql.DataFrame,
         .withColumn('year', F.year(df_time.start_time)) \
         .withColumn('weekday', F.dayofweek(df_time.start_time)) \
         .dropDuplicates()
-    df_time.write.parquet(path=os.path.join(output_folder, 'time.parquet'),
-                          partitionBy=['year', 'month'])
+    df_time.write.parquet(path=os.path.join(output_folder, 'time_table', 'time_table.parquet'),
+                          mode='append', partitionBy=['year', 'month'])
 
     df_songplays = log_data.select(
         ['artist', 'song', 'ts', 'user_id', 'level', 'session_id', 'location', 'user_agent']) \
@@ -142,13 +145,17 @@ def process_log_data(*, song_data: pysql.DataFrame, log_data: pysql.DataFrame,
         .drop('artist', 'song', 'artist_name', 'title') \
         .dropDuplicates() \
         .withColumn('songplay_id', F.monotonically_increasing_id())
-    df_songplays.write.parquet(path=os.path.join(output_folder, 'songplays.parquet'))
+    df_songplays = df_songplays.withColumn('month', F.month(df_songplays.start_time)) \
+                               .withColumn('year', F.year(df_songplays.start_time))
+    df_songplays.write.parquet(path=os.path.join(output_folder, 'songplays_table',
+                                                 'songplays_table.parquet'),
+                               mode='append', partitionBy=['year', 'month'])
 
 
 def main():
     spark = create_spark_session()
     input_data = "s3a://udacity-dend/"
-    output_folder = ""
+    output_folder = "s3a://fake-sparkify-s3/"
 
     data = load_data(spark=spark, s3_path=input_data)
 
