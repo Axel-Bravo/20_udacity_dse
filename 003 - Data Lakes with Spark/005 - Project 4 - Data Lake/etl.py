@@ -86,7 +86,8 @@ def process_song_data(*, song_data: pysql.DataFrame, output_folder: str) -> None
 
     Returns: None
     """
-    df_songs = song_data.select('song_id', 'title', 'artist_id', 'year', 'duration')
+    df_songs = song_data.select('song_id', 'title', 'artist_id', 'year', 'duration') \
+                        .dropDuplicates()
     df_songs.write.parquet(path=os.path.join(output_folder, 'songs.parquet'),
                            partitionBy=['year', 'artist_id'])
 
@@ -95,7 +96,8 @@ def process_song_data(*, song_data: pysql.DataFrame, output_folder: str) -> None
         .withColumnRenamed('artist_name', 'name') \
         .withColumnRenamed('artist_location', 'location') \
         .withColumnRenamed('artist_latitude', 'latitude') \
-        .withColumnRenamed('artist_longitude', 'longitude')
+        .withColumnRenamed('artist_longitude', 'longitude') \
+        .dropDuplicates()
     df_artists.write.parquet(path=os.path.join(output_folder, 'artists.parquet'))
 
 
@@ -116,7 +118,8 @@ def process_log_data(*, song_data: pysql.DataFrame, log_data: pysql.DataFrame,
 
     Returns: None
     """
-    df_users = log_data.select('user_id', 'first_name', 'last_name', 'gender', 'level')
+    df_users = log_data.select('user_id', 'first_name', 'last_name', 'gender', 'level') \
+                       .dropDuplicates()
     df_users.write.parquet(path=os.path.join(output_folder, 'users.parquet'))
 
     df_time = log_data.select('ts').withColumnRenamed('ts', 'start_time')
@@ -125,7 +128,8 @@ def process_log_data(*, song_data: pysql.DataFrame, log_data: pysql.DataFrame,
         .withColumn('week', F.weekofyear(df_time.start_time)) \
         .withColumn('month', F.month(df_time.start_time)) \
         .withColumn('year', F.year(df_time.start_time)) \
-        .withColumn('weekday', F.dayofweek(df_time.start_time))
+        .withColumn('weekday', F.dayofweek(df_time.start_time)) \
+        .dropDuplicates()
     df_time.write.parquet(path=os.path.join(output_folder, 'time.parquet'),
                           partitionBy=['year', 'month'])
 
@@ -136,6 +140,7 @@ def process_log_data(*, song_data: pysql.DataFrame, log_data: pysql.DataFrame,
               [log_data.artist == song_data.artist_name, log_data.song == song_data.title],
               'inner') \
         .drop('artist', 'song', 'artist_name', 'title') \
+        .dropDuplicates() \
         .withColumn('songplay_id', F.monotonically_increasing_id())
     df_songplays.write.parquet(path=os.path.join(output_folder, 'songplays.parquet'))
 
