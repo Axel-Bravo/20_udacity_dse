@@ -1,0 +1,1 @@
+docker run -d -p 8080:8080 -v "$(pwd)"/airflow:/usr/local/airflow -v "$(pwd)"/airflow/requirements.txt:/requirements.txt --name airflow_solo puckel/docker-airflow webserver
