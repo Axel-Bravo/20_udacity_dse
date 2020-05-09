@@ -132,3 +132,5 @@ dmypy.json
 .idea/
 *.cfg
 /.pylintrc
+/004 - Data Pipelines with Airflow/airflow/
+/.vscode/
