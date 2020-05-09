@@ -1,0 +1,1 @@
+docker run -P  -v "$PWD":/home/jovyan/work --name notebook jupyter/all-spark-notebook

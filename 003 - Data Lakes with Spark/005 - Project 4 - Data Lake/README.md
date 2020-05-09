@@ -71,7 +71,7 @@ Tables composing the golden database' tables are:
     - duration: __float__
 
 - artist's table:
-    - artist_id: __varchar___
+    - artist_id: __varchar__
     - name:  __varchar__
     - location: __varchar__
     - latitude: __float__
