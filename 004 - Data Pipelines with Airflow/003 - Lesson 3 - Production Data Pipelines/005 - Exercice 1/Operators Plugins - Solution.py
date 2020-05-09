@@ -1,18 +1,15 @@
 import datetime
 import logging
+import sql_statements
 
 from airflow import DAG
+from airflow.models import Variable
 from airflow.contrib.hooks.aws_hook import AwsHook
-from airflow.hooks.postgres_hook import PostgresHook
+from airflow.operators.postgres_operator import PostgresOperator
+from airflow.operators.python_operator import PythonOperator
 
-from airflow.operators import (
-    HasRowsOperator,
-    PostgresOperator,
-    PythonOperator,
-    S3ToRedshiftOperator
-)
-
-import sql_statements
+from has_rows import HasRowsOperator
+from s3_to_redshift import S3ToRedshiftOperator
 
 
 dag = DAG(
@@ -23,6 +20,8 @@ dag = DAG(
     max_active_runs=1
 )
 
+
+# Trips
 create_trips_table = PostgresOperator(
     task_id="create_trips_table",
     dag=dag,
@@ -36,17 +35,18 @@ copy_trips_task = S3ToRedshiftOperator(
     table="trips",
     redshift_conn_id="redshift",
     aws_credentials_id="aws_credentials",
-    s3_bucket="udac-data-pipelines",
+    s3_bucket=f"{Variable.get('s3_bucket')}/{Variable.get('s3_prefix')}",
     s3_key="divvy/partitioned/{execution_date.year}/{execution_date.month}/divvy_trips.csv"
 )
 
 check_trips = HasRowsOperator(
-    redshift_conn_id="redshift",
-    table="trips",
+    task_id="check_trips",
     dag=dag,
-    task_id="check_trips_data"
+    redshift_conn_id="redshift",
+    table="trips"
 )
-    
+
+# Stations
 create_stations_table = PostgresOperator(
     task_id="create_stations_table",
     dag=dag,
@@ -59,21 +59,17 @@ copy_stations_task = S3ToRedshiftOperator(
     dag=dag,
     redshift_conn_id="redshift",
     aws_credentials_id="aws_credentials",
-    s3_bucket="udac-data-pipelines",
+    s3_bucket=f"{Variable.get('s3_bucket')}/{Variable.get('s3_prefix')}",
     s3_key="divvy/unpartitioned/divvy_stations_2017.csv",
     table="stations"
 )
 
-
 check_stations = HasRowsOperator(
-    redshift_conn_id="redshift",
-    table="stations",
+    task_id="check_stations",
     dag=dag,
-    task_id="check_stations_data"
+    redshift_conn_id="redshift",
+    table="stations"
 )
 
-
-create_trips_table >> copy_trips_task
-copy_trips_task >> check_trips
-create_stations_table >> copy_stations_task
-copy_stations_task >> check_stations
+create_trips_table >> copy_trips_task  >> check_trips 
+create_stations_table >> copy_stations_task >> check_stations
