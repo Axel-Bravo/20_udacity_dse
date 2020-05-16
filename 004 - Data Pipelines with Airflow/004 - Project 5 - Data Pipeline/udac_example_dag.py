@@ -78,7 +78,9 @@ load_time_dimension_table = PostgresOperator(
 
 run_quality_checks = DataQualityOperator(
         task_id='Run_data_quality_checks',
-        dag=dag
+        dag=dag,
+        tables=["songplay", "users", "song", "artist", "time"],
+        redshift_conn_id='redshift',
         )
 
 end_operator = DummyOperator(task_id='Stop_execution', dag=dag)
