@@ -62,18 +62,16 @@ CREATE TABLE public.staging_songs (
 	"year" int4
 );
 
-CREATE TABLE public.staging_songs (
-	num_songs int4,
-	artist_id varchar(256),
-	artist_name varchar(256),
-	artist_latitude numeric(18,0),
-	artist_longitude numeric(18,0),
-	artist_location varchar(256),
-	song_id varchar(256),
-	title varchar(256),
-	duration numeric(18,0),
-	"year" int4
-);
+CREATE TABLE public."time" (
+	start_time timestamp NOT NULL,
+	"hour" int4,
+	"day" int4,
+	week int4,
+	"month" varchar(256),
+	"year" int4,
+	weekday varchar(256),
+	CONSTRAINT time_pkey PRIMARY KEY (start_time)
+) ;
 
 CREATE TABLE public.users (
 	userid int4 NOT NULL,
@@ -83,8 +81,3 @@ CREATE TABLE public.users (
 	"level" varchar(256),
 	CONSTRAINT users_pkey PRIMARY KEY (userid)
 );
-
-
-
-
-
