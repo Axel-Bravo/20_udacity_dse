@@ -1,5 +1,6 @@
 class SqlQueries:
     songplay_table_insert = ("""
+        BEGIN;
         DROP TABLE IF EXISTS songplay_table;
         CREATE TABLE songplay_table AS
             SELECT
@@ -19,9 +20,11 @@ class SqlQueries:
                 ON events.song = songs.title
                     AND events.artist = songs.artist_name
                     AND events.length = songs.duration;
+        COMMIT;
     """)
 
     user_table_insert = ("""
+        BEGIN;
         DROP TABLE IF EXISTS user_table;
         CREATE TABLE user_table AS
             SELECT distinct userid,
@@ -31,9 +34,11 @@ class SqlQueries:
                    level
             FROM staging_events
             WHERE page='NextSong';
+        COMMIT;
     """)
 
     song_table_insert = ("""
+        BEGIN;
         DROP TABLE IF EXISTS song_table;
         CREATE TABLE song_table AS
             SELECT distinct song_id,
@@ -42,9 +47,11 @@ class SqlQueries:
                    year, 
                    duration
             FROM staging_songs;
+        COMMIT;
     """)
 
     artist_table_insert = ("""
+        BEGIN;
         DROP TABLE IF EXISTS artist_table;
         CREATE TABLE artist_table AS
             SELECT distinct artist_id, 
@@ -53,9 +60,11 @@ class SqlQueries:
                    artist_latitude, 
                    artist_longitude
             FROM staging_songs;
+        COMMIT;
     """)
 
     time_table_insert = ("""
+        BEGIN;
         DROP TABLE IF EXISTS time_table;
         CREATE TABLE time_table AS
             SELECT start_time, 
@@ -66,4 +75,5 @@ class SqlQueries:
                    extract(year from start_time), 
                    extract(dayofweek from start_time)
             FROM songplays;
+        COMMIT;
     """)

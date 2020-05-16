@@ -2,10 +2,9 @@ import datetime
 
 from airflow import DAG
 from airflow.operators import (
-    DataQualityOperator, StageToRedshiftOperator,
+    DataQualityOperator, LoadDimensionOperator, LoadFactOperator, StageToRedshiftOperator,
     )
 from airflow.operators.dummy_operator import DummyOperator
-from airflow.operators.postgres_operator import PostgresOperator
 from helpers import SqlQueries
 
 default_args = {
@@ -36,44 +35,39 @@ stage_songs_to_redshift = StageToRedshiftOperator(
         dag=dag
         )
 
-load_songplays_table = PostgresOperator(
+load_songplays_table = LoadFactOperator(
         task_id='Load_songplays_fact_table',
         dag=dag,
-        sql=SqlQueries.songplay_table_insert,
-        autocommit=True,
-        postgres_conn_id="redshift"
+        redshift_conn_id='redshift',
+        sql_query=SqlQueries.songplay_table_insert,
         )
 
-load_user_dimension_table = PostgresOperator(
+load_user_dimension_table = LoadDimensionOperator(
         task_id='Load_user_dim_table',
         dag=dag,
-        sql=SqlQueries.user_table_insert,
-        autocommit=True,
-        postgres_conn_id="redshift"
+        redshift_conn_id='redshift',
+        sql_query=SqlQueries.user_table_insert,
         )
 
-load_song_dimension_table = PostgresOperator(
+load_song_dimension_table = LoadDimensionOperator(
         task_id='Load_song_dim_table',
         dag=dag,
-        sql=SqlQueries.song_table_insert,
-        autocommit=True,
-        postgres_conn_id="redshift"
+        redshift_conn_id='redshift',
+        sql_query=SqlQueries.song_table_insert,
         )
 
-load_artist_dimension_table = PostgresOperator(
+load_artist_dimension_table = LoadDimensionOperator(
         task_id='Load_artist_dim_table',
         dag=dag,
-        sql=SqlQueries.artist_table_insert,
-        autocommit=True,
-        postgres_conn_id="redshift"
+        redshift_conn_id='redshift',
+        sql_query=SqlQueries.artist_table_insert,
         )
 
-load_time_dimension_table = PostgresOperator(
+load_time_dimension_table = LoadDimensionOperator(
         task_id='Load_time_dim_table',
         dag=dag,
-        sql=SqlQueries.time_table_insert,
-        autocommit=True,
-        postgres_conn_id="redshift"
+        redshift_conn_id='redshift',
+        sql_query=SqlQueries.time_table_insert,
         )
 
 run_quality_checks = DataQualityOperator(
